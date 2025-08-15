@@ -27,8 +27,11 @@ app.get("/sign-up", (req, res) => res.render("sign-up-form"));
 app.post("/sign-up", async (req, res, next) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    await pool.query("INSERT INTO users (username, password) VALUES ($1, $2)", [
-      req.body.username,
+    // Include first name, last name, and email
+    await pool.query("INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4)", [
+      req.body.first_name,
+      req.body.last_name,
+      req.body.email,
       hashedPassword,
     ]);
     res.redirect("/");
@@ -38,29 +41,33 @@ app.post("/sign-up", async (req, res, next) => {
   }
 });
 
+// Updated passport strategy to use email instead of username
 passport.use(
-  new LocalStrategy(async (username, password, done) => {
-    try {
-      const { rows } = await pool.query(
-        "SELECT * FROM users WHERE username = $1",
-        [username]
-      );
-      const user = rows[0];
+  new LocalStrategy(
+    { usernameField: 'email' }, // Tell passport to look for email field instead of username
+    async (email, password, done) => {
+      try {
+        const { rows } = await pool.query(
+          "SELECT * FROM users WHERE email = $1",
+          [email]
+        );
+        const user = rows[0];
 
-      if (!user) {
-        return done(null, false, { message: "Incorrect username" });
-      }
-      const match = await bcrypt.compare(password, user.password);
-      if (!match) {
-        // passwords do not match!
-        return done(null, false, { message: "Incorrect password" });
-      }
+        if (!user) {
+          return done(null, false, { message: "Incorrect email" });
+        }
+        const match = await bcrypt.compare(password, user.password);
+        if (!match) {
+          // passwords do not match!
+          return done(null, false, { message: "Incorrect password" });
+        }
 
-      return done(null, user);
-    } catch (err) {
-      return done(err);
+        return done(null, user);
+      } catch (err) {
+        return done(err);
+      }
     }
-  })
+  )
 );
 
 passport.serializeUser((user, done) => {
