@@ -24,7 +24,7 @@
           </div>
         <% } %>
         
-        <form action="/auth/sign-up" method="POST" class="auth-form" onsubmit="return validatePasswords()">
+        <form action="/auth/sign-up" method="POST" class="auth-form" id="signupForm">
           <div class="form-row">
             <div class="form-group form-group-half">
               <label for="first_name">First Name</label>
@@ -76,7 +76,7 @@
               placeholder="Create a strong password"
               required 
             />
-            <div class="password-requirements">
+            <div class="password-requirements" id="passwordRequirements">
               Password must be 8-128 characters with at least one uppercase letter, 
               lowercase letter, number, and special character.
             </div>
@@ -92,6 +92,7 @@
               placeholder="Confirm your password"
               required 
             />
+            <div class="password-match-indicator" id="passwordMatch" style="display: none;"></div>
           </div>
           
           <button type="submit" class="btn btn-primary btn-full">Create Account</button>
@@ -104,33 +105,87 @@
     </div>
 
     <script>
-      function validatePasswords() {
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirm_password').value;
-        
-        if (password !== confirmPassword) {
-          alert('Passwords do not match!');
-          return false;
-        }
-        return true;
-      }
+      document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('signupForm');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirm_password');
+        const passwordRequirements = document.getElementById('passwordRequirements');
+        const passwordMatch = document.getElementById('passwordMatch');
 
-      // Real-time password validation feedback
-      document.getElementById('password').addEventListener('input', function(e) {
-        const password = e.target.value;
-        const requirements = document.querySelector('.password-requirements');
-        
-        const hasUpper = /[A-Z]/.test(password);
-        const hasLower = /[a-z]/.test(password);
-        const hasNumber = /\d/.test(password);
-        const hasSpecial = /[@$!%*?&]/.test(password);
-        const hasLength = password.length >= 8 && password.length <= 128;
-        
-        if (hasUpper && hasLower && hasNumber && hasSpecial && hasLength) {
-          requirements.style.color = 'green';
-          requirements.textContent = '✓ Password meets all requirements';
-        } else {
-          requirements.style.color = '#666';
+        // Form submission validation
+        form.addEventListener('submit', function(e) {
+          const password = passwordInput.value;
+          const confirmPassword = confirmPasswordInput.value;
+          
+          if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+            confirmPasswordInput.focus();
+            return false;
+          }
+          
+          // Additional password validation
+          const hasUpper = /[A-Z]/.test(password);
+          const hasLower = /[a-z]/.test(password);
+          const hasNumber = /\d/.test(password);
+          const hasSpecial = /[@$!%*?&]/.test(password);
+          const hasLength = password.length >= 8 && password.length <= 128;
+          
+          if (!(hasUpper && hasLower && hasNumber && hasSpecial && hasLength)) {
+            e.preventDefault();
+            alert('Password does not meet the requirements!');
+            passwordInput.focus();
+            return false;
+          }
+          
+          return true;
+        });
+
+        // Real-time password validation feedback
+        passwordInput.addEventListener('input', function(e) {
+          const password = e.target.value;
+          
+          const hasUpper = /[A-Z]/.test(password);
+          const hasLower = /[a-z]/.test(password);
+          const hasNumber = /\d/.test(password);
+          const hasSpecial = /[@$!%*?&]/.test(password);
+          const hasLength = password.length >= 8 && password.length <= 128;
+          
+          if (hasUpper && hasLower && hasNumber && hasSpecial && hasLength) {
+            passwordRequirements.style.color = 'green';
+            passwordRequirements.textContent = '✓ Password meets all requirements';
+          } else {
+            passwordRequirements.style.color = '#666';
+            passwordRequirements.textContent = 'Password must be 8-128 characters with at least one uppercase letter, lowercase letter, number, and special character.';
+          }
+          
+          // Check password match if confirm password has content
+          if (confirmPasswordInput.value) {
+            checkPasswordMatch();
+          }
+        });
+
+        // Real-time password confirmation validation
+        confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+
+        function checkPasswordMatch() {
+          const password = passwordInput.value;
+          const confirmPassword = confirmPasswordInput.value;
+          
+          if (confirmPassword === '') {
+            passwordMatch.style.display = 'none';
+            return;
+          }
+          
+          passwordMatch.style.display = 'block';
+          
+          if (password === confirmPassword) {
+            passwordMatch.style.color = 'green';
+            passwordMatch.textContent = '✓ Passwords match';
+          } else {
+            passwordMatch.style.color = 'red';
+            passwordMatch.textContent = '✗ Passwords do not match';
+          }
         }
       });
     </script>

@@ -3,15 +3,16 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const { signUpValidation, loginValidation } = require('../validators/authValidators');
+const { loginLimiter, signUpLimiter } = require('../config/security');
 
 // Sign up routes
 router.get('/sign-up', authController.renderSignUp);
-router.post('/sign-up', signUpValidation, authController.handleSignUp);
+router.post('/sign-up', signUpLimiter, signUpValidation, authController.handleSignUp);
 
-// Login routes
-router.post('/login', loginValidation, authController.handleLogin);
+// Login routes - apply rate limiting only to login POST
+router.post('/login', loginLimiter, loginValidation, authController.handleLogin);
 
-// Logout route
+// Logout route - no rate limiting needed
 router.get('/logout', authController.handleLogout);
 
 module.exports = router;
