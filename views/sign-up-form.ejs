@@ -1,53 +1,107 @@
+<!-- views/sign-up-form.ejs -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Sign Up</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Members Only Club</title>
+    <link rel="stylesheet" href="/styles/main.css">
   </head>
   <body>
-    <h1>Sign Up</h1>
-    <form action="/sign-up" method="POST" onsubmit="return validatePasswords()">
-      <label for="first_name">First Name</label>
-      <input 
-        id="first_name" 
-        name="first_name" 
-        placeholder="Enter your first name" 
-        type="text" 
-        required 
-      />
-      <label for="last_name">Last Name</label>
-      <input 
-        id="last_name" 
-        name="last_name" 
-        placeholder="Enter your last name" 
-        type="text" 
-        required 
-      />
-      <label for="email">Email</label>
-      <input 
-        id="email" 
-        name="email" 
-        placeholder="Enter your email" 
-        type="email" 
-        required 
-      />
-      <label for="password">Password</label>
-      <input 
-        id="password" 
-        name="password" 
-        type="password" 
-        required 
-      />
-      <label for="confirm_password">Confirm Password</label>
-      <input 
-        id="confirm_password" 
-        name="confirm_password" 
-        type="password" 
-        required 
-      />
-      <button type="submit">Sign Up</button>
-    </form>
-    <p><a href="/">Back to Login</a></p>
+    <div class="container">
+      <div class="auth-container">
+        <h1>Join the Club</h1>
+        <p class="subtitle">Create your account to get started</p>
+        
+        <!-- Display errors if any -->
+        <% if (locals.errors && errors.length > 0) { %>
+          <div class="error-container">
+            <ul class="error-list">
+              <% errors.forEach(error => { %>
+                <li class="error-message"><%= error.msg %></li>
+              <% }); %>
+            </ul>
+          </div>
+        <% } %>
+        
+        <form action="/auth/sign-up" method="POST" class="auth-form" onsubmit="return validatePasswords()">
+          <div class="form-row">
+            <div class="form-group form-group-half">
+              <label for="first_name">First Name</label>
+              <input 
+                id="first_name" 
+                name="first_name" 
+                placeholder="First name" 
+                type="text" 
+                class="form-input"
+                value="<%= locals.formData ? formData.first_name || '' : '' %>"
+                required 
+              />
+            </div>
+            
+            <div class="form-group form-group-half">
+              <label for="last_name">Last Name</label>
+              <input 
+                id="last_name" 
+                name="last_name" 
+                placeholder="Last name" 
+                type="text" 
+                class="form-input"
+                value="<%= locals.formData ? formData.last_name || '' : '' %>"
+                required 
+              />
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input 
+              id="email" 
+              name="email" 
+              placeholder="Enter your email" 
+              type="email" 
+              class="form-input"
+              value="<%= locals.formData ? formData.email || '' : '' %>"
+              required 
+            />
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input 
+              id="password" 
+              name="password" 
+              type="password" 
+              class="form-input"
+              placeholder="Create a strong password"
+              required 
+            />
+            <div class="password-requirements">
+              Password must be 8-128 characters with at least one uppercase letter, 
+              lowercase letter, number, and special character.
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <input 
+              id="confirm_password" 
+              name="confirm_password" 
+              type="password" 
+              class="form-input"
+              placeholder="Confirm your password"
+              required 
+            />
+          </div>
+          
+          <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+        </form>
+        
+        <div class="auth-links">
+          <p>Already have an account? <a href="/">Log in here</a></p>
+        </div>
+      </div>
+    </div>
 
     <script>
       function validatePasswords() {
@@ -60,6 +114,25 @@
         }
         return true;
       }
+
+      // Real-time password validation feedback
+      document.getElementById('password').addEventListener('input', function(e) {
+        const password = e.target.value;
+        const requirements = document.querySelector('.password-requirements');
+        
+        const hasUpper = /[A-Z]/.test(password);
+        const hasLower = /[a-z]/.test(password);
+        const hasNumber = /\d/.test(password);
+        const hasSpecial = /[@$!%*?&]/.test(password);
+        const hasLength = password.length >= 8 && password.length <= 128;
+        
+        if (hasUpper && hasLower && hasNumber && hasSpecial && hasLength) {
+          requirements.style.color = 'green';
+          requirements.textContent = '✓ Password meets all requirements';
+        } else {
+          requirements.style.color = '#666';
+        }
+      });
     </script>
   </body>
 </html>

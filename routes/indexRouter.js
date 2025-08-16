@@ -1,8 +1,8 @@
-// const express = require('express');
-// const router = express.Router();
-// const indexController = require('../controllers/indexController.js');
+// ===== routes/indexRoutes.js =====
+const express = require('express');
+const router = express.Router();
+const indexController = require('../controllers/indexController');
 
-// // Home page - show all inventory items
-// router.get('/', indexController.getElements);
+router.get('/', indexController.renderHome);
 
-// module.exports = router;
+module.exports = router;

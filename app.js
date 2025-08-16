@@ -1,112 +1,52 @@
-// app.js
-
-require("dotenv").config(); // Add this to load environment variables
-const path = require("node:path");
-const { Pool } = require("pg");
+// app.js - Main application entry point
+require("dotenv").config();
 const express = require("express");
-const session = require("express-session");
-const passport = require("passport");
-const LocalStrategy = require("passport-local").Strategy;
-const bcrypt = require("bcryptjs");
+const path = require("node:path");
 
-const pool = require("./db/pool");
+// Import configuration and middleware
+const { configureMiddleware } = require('./config/middleware');
+const { configureSecurity } = require('./config/security');
+require('./config/passport'); // Initialize passport configuration
+
+// Import routes
+const authRoutes = require('./routes/authRouter');
+const indexRoutes = require('./routes/indexRouter');
 
 const app = express();
+
+// View engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
-app.use(session({ secret: "cats", resave: false, saveUninitialized: false }));
-app.use(passport.session());
-app.use(express.urlencoded({ extended: false }));
+// Configure security and middleware
+configureSecurity(app);
+configureMiddleware(app);
 
-app.get("/", (req, res) => {
-  res.render("index", { user: req.user });
-});
+// Routes
+app.use('/', indexRoutes);
+app.use('/auth', authRoutes);
 
-app.get("/sign-up", (req, res) => res.render("sign-up-form"));
-app.post("/sign-up", async (req, res, next) => {
-  try {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    // Include first name, last name, and email
-    await pool.query("INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4)", [
-      req.body.first_name,
-      req.body.last_name,
-      req.body.email,
-      hashedPassword,
-    ]);
-    res.redirect("/");
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
-});
-
-// Updated passport strategy to use email instead of username
-passport.use(
-  new LocalStrategy(
-    { usernameField: 'email' }, // Tell passport to look for email field instead of username
-    async (email, password, done) => {
-      try {
-        const { rows } = await pool.query(
-          "SELECT * FROM users WHERE email = $1",
-          [email]
-        );
-        const user = rows[0];
-
-        if (!user) {
-          return done(null, false, { message: "Incorrect email" });
-        }
-        const match = await bcrypt.compare(password, user.password);
-        if (!match) {
-          // passwords do not match!
-          return done(null, false, { message: "Incorrect password" });
-        }
-
-        return done(null, user);
-      } catch (err) {
-        return done(err);
-      }
-    }
-  )
-);
-
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-  try {
-    const { rows } = await pool.query("SELECT * FROM users WHERE id = $1", [
-      id,
-    ]);
-    const user = rows[0];
-
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
-});
-
-app.post(
-  "/log-in",
-  passport.authenticate("local", {
-    successRedirect: "/",
-    failureRedirect: "/",
-  })
-);
-
-app.get("/log-out", (req, res, next) => {
-  req.logout((err) => {
-    if (err) {
-      return next(err);
-    }
-    res.redirect("/");
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).render("error", {
+    message: "Something went wrong. Please try again.",
+    user: req.user || null
   });
 });
 
-app.listen(3000, (error) => {
+// 404 handler
+app.use((req, res) => {
+  res.status(404).render("error", {
+    message: "Page not found",
+    user: req.user || null
+  });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, (error) => {
   if (error) {
     throw error;
   }
-  console.log("app listening on port 3000!");
+  console.log(`App listening on port ${PORT}!`);
 });

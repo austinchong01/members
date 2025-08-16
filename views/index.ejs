@@ -1,31 +1,93 @@
+<!-- views/index.ejs -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Log In</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Members Only Club</title>
+    <link rel="stylesheet" href="/styles/main.css">
   </head>
   <body>
-    <% if (locals.user) {%>
-    <h1>WELCOME BACK <%= user.first_name %> <%= user.last_name %></h1>
-    <p>Email: <%= user.email %></p>
-    <p>Status: <%= user.is_member ? 'Member' : 'Non-Member' %></p>
-    <a href="/log-out">LOG OUT</a>
-    <% } else { %>
-    <h1>Please log in</h1>
-    <form action="/log-in" method="POST">
-      <label for="email">Email</label>
-      <input
-        id="email"
-        name="email"
-        placeholder="Enter your email"
-        type="email"
-        required
-      />
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" required />
-      <button type="submit">Log In</button>
-    </form>
-    <p><a href="/sign-up">Don't have an account? Sign up here</a></p>
-    <%}%>
+    <div class="container">
+      <% if (user) {%>
+        <header class="welcome-header">
+          <h1>Welcome Back, <%= user.first_name %> <%= user.last_name %>!</h1>
+          <div class="user-info">
+            <p><strong>Email:</strong> <%= user.email %></p>
+            <p><strong>Status:</strong> 
+              <span class="<%= user.is_member ? 'member' : 'non-member' %>">
+                <%= user.is_member ? 'Member' : 'Non-Member' %>
+              </span>
+            </p>
+          </div>
+          <a href="/auth/logout" class="btn btn-secondary">Log Out</a>
+        </header>
+        
+        <main class="dashboard">
+          <h2>Dashboard</h2>
+          <% if (user.is_member) { %>
+            <div class="member-content">
+              <h3>Member Area</h3>
+              <p>Welcome to the exclusive member area!</p>
+              <!-- Add member-specific content here -->
+            </div>
+          <% } else { %>
+            <div class="non-member-content">
+              <h3>Become a Member</h3>
+              <p>Join our exclusive club to access member-only content!</p>
+              <button class="btn btn-primary">Request Membership</button>
+            </div>
+          <% } %>
+        </main>
+      <% } else { %>
+        <div class="auth-container">
+          <h1>Members Only Club</h1>
+          <p class="subtitle">Please log in to access your account</p>
+          
+          <!-- Display errors if any -->
+          <% if (locals.errors && errors.length > 0) { %>
+            <div class="error-container">
+              <ul class="error-list">
+                <% errors.forEach(error => { %>
+                  <li class="error-message"><%= error.msg %></li>
+                <% }); %>
+              </ul>
+            </div>
+          <% } %>
+          
+          <form action="/auth/login" method="POST" class="auth-form">
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input
+                id="email"
+                name="email"
+                placeholder="Enter your email"
+                type="email"
+                class="form-input"
+                required
+              />
+            </div>
+            
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input 
+                id="password" 
+                name="password" 
+                type="password" 
+                class="form-input"
+                placeholder="Enter your password"
+                required 
+              />
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-full">Log In</button>
+          </form>
+          
+          <div class="auth-links">
+            <p>Don't have an account? <a href="/auth/sign-up">Sign up here</a></p>
+          </div>
+        </div>
+      <% } %>
+    </div>
   </body>
 </html>
