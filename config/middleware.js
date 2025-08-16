@@ -16,14 +16,11 @@ const configureMiddleware = (app) => {
     }
   }));
 
-  // Passport middleware
   app.use(passport.initialize());
   app.use(passport.session());
   
-  // Body parsing
   app.use(express.urlencoded({ extended: false, limit: '10kb' }));
   
-  // Make user available to all templates
   app.use((req, res, next) => {
     res.locals.user = req.user;
     next();

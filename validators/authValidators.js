@@ -1,6 +1,5 @@
 // ===== validators/authValidators.js =====
 const { body } = require("express-validator");
-const { sanitizeName, sanitizeEmail } = require("../utils/sanitization");
 
 const signUpValidation = [
   body('first_name')
@@ -8,25 +7,21 @@ const signUpValidation = [
     .isLength({ min: 1, max: 20 })
     .withMessage('First name must be between 1-20 characters')
     .matches(/^[a-zA-Z\s'-]+$/)
-    .withMessage('First name can only contain letters, spaces, hyphens, and apostrophes')
-    .customSanitizer(sanitizeName),
+    .withMessage('First name can only contain letters, spaces, hyphens, and apostrophes'),
   
   body('last_name')
     .trim()
     .isLength({ min: 1, max: 20 })
     .withMessage('Last name must be between 1-20 characters')
     .matches(/^[a-zA-Z\s'-]+$/)
-    .withMessage('Last name can only contain letters, spaces, hyphens, and apostrophes')
-    .customSanitizer(sanitizeName),
+    .withMessage('Last name can only contain letters, spaces, hyphens, and apostrophes'),
   
   body('email')
     .trim()
     .isEmail()
     .withMessage('Please provide a valid email address')
     .isLength({ max: 255 })
-    .withMessage('Email must not exceed 255 characters')
-    .normalizeEmail()
-    .customSanitizer(sanitizeEmail),
+    .withMessage('Email must not exceed 255 characters'),
   
   body('password')
     .isLength({ min: 8, max: 20 })
@@ -47,9 +42,7 @@ const loginValidation = [
   body('email')
     .trim()
     .isEmail()
-    .withMessage('Please provide a valid email address')
-    .normalizeEmail()
-    .customSanitizer(sanitizeEmail),
+    .withMessage('Please provide a valid email address'),
   
   body('password')
     .notEmpty()

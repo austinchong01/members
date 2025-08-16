@@ -15,20 +15,21 @@ const handleSignUp = async (req, res, next) => {
     if (!errors.isEmpty()) {
       return res.status(400).render("sign-up-form", { 
         errors: errors.array(),
-        formData: req.body
+        formData: req.body // Keep original unsanitized data for form re-population
       });
     }
 
+    // Only sanitize AFTER validation passes
     const firstName = sanitizeName(req.body.first_name);
     const lastName = sanitizeName(req.body.last_name);
     const email = sanitizeEmail(req.body.email);
 
-    // Check if user already exists
+    // Check if user already exists (using sanitized email)
     const existingUser = await pool.query("SELECT id FROM users WHERE email = $1", [email]);
     if (existingUser.rows.length > 0) {
       return res.status(400).render("sign-up-form", {
         errors: [{ msg: "An account with this email already exists" }],
-        formData: req.body
+        formData: req.body // Keep original data for form re-population
       });
     }
 
@@ -44,7 +45,7 @@ const handleSignUp = async (req, res, next) => {
     console.error('Sign-up error:', error);
     res.status(500).render("sign-up-form", {
       errors: [{ msg: "An error occurred during registration. Please try again." }],
-      formData: req.body
+      formData: req.body // Keep original data even on server errors
     });
   }
 };
@@ -57,6 +58,18 @@ const handleLogin = (req, res, next) => {
       errors: errors.array()
     });
   }
+
+  // Sanitize email only after validation passes
+  const sanitizedEmail = sanitizeEmail(req.body.email);
+
+  // Create a new request object with sanitized email for passport
+  const sanitizedReq = {
+    ...req,
+    body: {
+      ...req.body,
+      email: sanitizedEmail
+    }
+  };
 
   passport.authenticate("local", (err, user, info) => {
     if (err) {
@@ -74,7 +87,7 @@ const handleLogin = (req, res, next) => {
       }
       return res.redirect("/");
     });
-  })(req, res, next);
+  })(sanitizedReq, res, next); // Use sanitized request for passport
 };
 
 const handleLogout = (req, res, next) => {

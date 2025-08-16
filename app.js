@@ -1,4 +1,4 @@
-// app.js - Main application entry point
+// app.js
 require("dotenv").config();
 const express = require("express");
 const path = require("node:path");
