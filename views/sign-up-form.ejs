@@ -107,7 +107,7 @@
               />
               <label for="is_admin" class="checkbox-label">
                 <span class="checkbox-text">Request Admin Access</span>
-                <small class="checkbox-help">Check this if you need administrative privileges</small>
+                <small class="checkbox-help">Check this if you need administrative privileges. Admins automatically receive membership status.</small>
               </label>
             </div>
           </div>
@@ -128,6 +128,22 @@
         const confirmPasswordInput = document.getElementById('confirm_password');
         const passwordRequirements = document.getElementById('passwordRequirements');
         const passwordMatch = document.getElementById('passwordMatch');
+        const adminCheckbox = document.getElementById('is_admin');
+        const adminLabel = document.querySelector('label[for="is_admin"]');
+
+        // Highlight admin benefits when checkbox is checked
+        adminCheckbox.addEventListener('change', function() {
+          if (this.checked) {
+            adminLabel.style.background = 'linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%)';
+            adminLabel.style.padding = '0.75rem';
+            adminLabel.style.borderRadius = '8px';
+            adminLabel.style.border = '2px solid #e74c3c';
+          } else {
+            adminLabel.style.background = 'none';
+            adminLabel.style.padding = '0';
+            adminLabel.style.border = 'none';
+          }
+        });
 
         // Form submission validation
         form.addEventListener('submit', function(e) {

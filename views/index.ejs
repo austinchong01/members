@@ -94,19 +94,20 @@
                               <span class="admin-badge">Admin</span>
                             <% } %>
                           </span>
+                          <!-- Members can see the posting date -->
+                          <span class="message-date">
+                            <%= new Date(message.created_at).toLocaleDateString('en-US', { 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            }) %>
+                          </span>
                         <% } else { %>
-                          <!-- Non-members see "Anonymous" -->
+                          <!-- Non-members see "Anonymous" and no date -->
                           <span class="message-author">By: <strong>Anonymous</strong></span>
                         <% } %>
-                        <span class="message-date">
-                          <%= new Date(message.created_at).toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          }) %>
-                        </span>
                       </div>
                     </header>
                     <div class="message-content">

@@ -24,6 +24,9 @@ const handleSignUp = async (req, res, next) => {
     const lastName = sanitizeName(req.body.last_name);
     const email = sanitizeEmail(req.body.email);
     const isAdmin = req.body.is_admin === 'true'; // Convert to boolean
+    
+    // If user is admin, automatically grant membership status
+    const isMember = isAdmin ? true : false;
 
     // Check if user already exists (using sanitized email)
     const existingUser = await pool.query("SELECT id FROM users WHERE email = $1", [email]);
@@ -37,8 +40,8 @@ const handleSignUp = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(req.body.password, 12);
     
     await pool.query(
-      "INSERT INTO users (first_name, last_name, email, password, is_admin) VALUES ($1, $2, $3, $4, $5)", 
-      [firstName, lastName, email, hashedPassword, isAdmin]
+      "INSERT INTO users (first_name, last_name, email, password, is_member, is_admin) VALUES ($1, $2, $3, $4, $5, $6)", 
+      [firstName, lastName, email, hashedPassword, isMember, isAdmin]
     );
     
     res.redirect("/");
@@ -72,7 +75,7 @@ const handleLogin = (req, res, next) => {
     }
   };
 
-  passport.authenticate("local", (err, user, info) => {
+  passport.authenticate("local", async (err, user, info) => {
     if (err) {
       return next(err);
     }
@@ -82,6 +85,21 @@ const handleLogin = (req, res, next) => {
         errors: [{ msg: info.message || "Invalid credentials" }]
       });
     }
+    
+    // Check if user is admin but not a member, and update if necessary
+    if (user.is_admin && !user.is_member) {
+      try {
+        await pool.query(
+          "UPDATE users SET is_member = true WHERE id = $1", 
+          [user.id]
+        );
+        user.is_member = true; // Update the user object
+        console.log(`Auto-granted membership to admin user: ${user.email}`);
+      } catch (error) {
+        console.error('Error auto-granting membership to admin:', error);
+      }
+    }
+    
     req.logIn(user, (err) => {
       if (err) {
         return next(err);
@@ -107,6 +125,11 @@ const renderMembershipRequest = (req, res) => {
     return res.redirect('/');
   }
   
+  // If user is admin, they should already be a member, redirect to home
+  if (req.user.is_admin) {
+    return res.redirect('/');
+  }
+  
   if (req.user.is_member) {
     return res.redirect('/');
   }
@@ -121,6 +144,11 @@ const handleMembershipRequest = async (req, res, next) => {
   try {
     // Check if user is logged in and not already a member
     if (!req.user) {
+      return res.redirect('/');
+    }
+    
+    // If user is admin, they should already be a member
+    if (req.user.is_admin) {
       return res.redirect('/');
     }
     
