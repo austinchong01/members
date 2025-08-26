@@ -23,6 +23,9 @@ app.set("view engine", "ejs");
 configureSecurity(app);
 configureMiddleware(app);
 
+// Add this line after configuring middleware
+app.use(express.static(path.join(__dirname, "public")));
+
 // Routes
 app.use('/', indexRoutes);
 app.use('/auth', authRoutes);

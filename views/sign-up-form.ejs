@@ -95,6 +95,23 @@
             <div class="password-match-indicator" id="passwordMatch" style="display: none;"></div>
           </div>
           
+          <!-- Admin checkbox -->
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input 
+                type="checkbox" 
+                id="is_admin" 
+                name="is_admin" 
+                value="true"
+                <%= (locals.formData && formData.is_admin) ? 'checked' : '' %>
+              />
+              <label for="is_admin" class="checkbox-label">
+                <span class="checkbox-text">Request Admin Access</span>
+                <small class="checkbox-help">Check this if you need administrative privileges</small>
+              </label>
+            </div>
+          </div>
+          
           <button type="submit" class="btn btn-primary btn-full">Create Account</button>
         </form>
         

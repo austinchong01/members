@@ -53,7 +53,45 @@ const handleNewMessage = async (req, res, next) => {
   }
 };
 
+const handleDeleteMessage = async (req, res, next) => {
+  try {
+    // Check if user is logged in and is an admin
+    if (!req.user) {
+      console.log('No user logged in');
+      return res.redirect('/');
+    }
+
+    if (!req.user.is_admin) {
+      console.log('User is not admin:', req.user);
+      return res.redirect('/?error=not_admin');
+    }
+
+    const messageId = parseInt(req.params.id);
+    
+    if (!messageId || isNaN(messageId)) {
+      return res.redirect('/?error=invalid_id');
+    }
+
+    // Check if message exists
+    const messageCheck = await pool.query("SELECT id FROM messages WHERE id = $1", [messageId]);
+    if (messageCheck.rows.length === 0) {
+      return res.redirect('/?error=message_not_found');
+    }
+
+    // Delete the message
+    await pool.query("DELETE FROM messages WHERE id = $1", [messageId]);
+    
+    console.log(`Message ${messageId} deleted by admin ${req.user.email}`);
+    res.redirect("/?message=deleted");
+    
+  } catch (error) {
+    console.error('Message deletion error:', error);
+    res.redirect("/?error=delete_failed");
+  }
+};
+
 module.exports = {
   renderNewMessage,
-  handleNewMessage
+  handleNewMessage,
+  handleDeleteMessage
 };

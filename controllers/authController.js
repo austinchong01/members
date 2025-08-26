@@ -23,6 +23,7 @@ const handleSignUp = async (req, res, next) => {
     const firstName = sanitizeName(req.body.first_name);
     const lastName = sanitizeName(req.body.last_name);
     const email = sanitizeEmail(req.body.email);
+    const isAdmin = req.body.is_admin === 'true'; // Convert to boolean
 
     // Check if user already exists (using sanitized email)
     const existingUser = await pool.query("SELECT id FROM users WHERE email = $1", [email]);
@@ -36,8 +37,8 @@ const handleSignUp = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(req.body.password, 12);
     
     await pool.query(
-      "INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4)", 
-      [firstName, lastName, email, hashedPassword]
+      "INSERT INTO users (first_name, last_name, email, password, is_admin) VALUES ($1, $2, $3, $4, $5)", 
+      [firstName, lastName, email, hashedPassword, isAdmin]
     );
     
     res.redirect("/");

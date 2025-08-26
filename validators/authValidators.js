@@ -35,6 +35,19 @@ const signUpValidation = [
         throw new Error('Passwords do not match');
       }
       return true;
+    }),
+
+  body('is_admin')
+    .optional()
+    .custom((value) => {
+      // Allow undefined, null, empty string, 'true', or 'false'
+      if (value === undefined || value === null || value === '') {
+        return true;
+      }
+      if (value === 'true' || value === true || value === 'false' || value === false) {
+        return true;
+      }
+      throw new Error('Admin field must be a valid boolean value');
     })
 ];
 
