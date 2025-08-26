@@ -49,7 +49,16 @@ const loginValidation = [
     .withMessage('Password is required')
 ];
 
+const membershipRequestValidation = [
+  body('membership_password')
+    .notEmpty()
+    .withMessage('Membership password is required')
+    .isLength({ min: 1, max: 50 })
+    .withMessage('Password must be between 1-50 characters')
+];
+
 module.exports = {
   signUpValidation,
-  loginValidation
+  loginValidation,
+  membershipRequestValidation
 };

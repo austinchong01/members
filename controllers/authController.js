@@ -99,9 +99,76 @@ const handleLogout = (req, res, next) => {
   });
 };
 
+// New membership functions
+const renderMembershipRequest = (req, res) => {
+  // Only allow logged-in users who are not already members
+  if (!req.user) {
+    return res.redirect('/');
+  }
+  
+  if (req.user.is_member) {
+    return res.redirect('/');
+  }
+
+  res.render("membership-request", { 
+    user: req.user,
+    errors: [] 
+  });
+};
+
+const handleMembershipRequest = async (req, res, next) => {
+  try {
+    // Check if user is logged in and not already a member
+    if (!req.user) {
+      return res.redirect('/');
+    }
+    
+    if (req.user.is_member) {
+      return res.redirect('/');
+    }
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).render("membership-request", { 
+        user: req.user,
+        errors: errors.array()
+      });
+    }
+
+    const { membership_password } = req.body;
+    
+    // Check if the password is correct
+    if (membership_password !== "membersonly") {
+      return res.status(400).render("membership-request", {
+        user: req.user,
+        errors: [{ msg: "Incorrect membership password. Please try again." }]
+      });
+    }
+
+    // Update user to member status
+    await pool.query(
+      "UPDATE users SET is_member = true WHERE id = $1", 
+      [req.user.id]
+    );
+    
+    // Update the session user object
+    req.user.is_member = true;
+    
+    res.redirect("/?membership=success");
+  } catch (error) {
+    console.error('Membership request error:', error);
+    res.status(500).render("membership-request", {
+      user: req.user,
+      errors: [{ msg: "An error occurred while processing your request. Please try again." }]
+    });
+  }
+};
+
 module.exports = {
   renderSignUp,
   handleSignUp,
   handleLogin,
-  handleLogout
+  handleLogout,
+  renderMembershipRequest,
+  handleMembershipRequest
 };

@@ -23,19 +23,55 @@
           <a href="/auth/logout" class="btn btn-secondary">Log Out</a>
         </header>
         
+        <!-- Success message for membership upgrade or message creation -->
+        <% if (typeof query !== 'undefined' && query.membership === 'success') { %>
+          <div class="success-container">
+            <div class="success-message">
+              🎉 Congratulations! You are now a member of the exclusive club!
+            </div>
+          </div>
+        <% } %>
+        <% if (typeof query !== 'undefined' && query.message === 'created') { %>
+          <div class="success-container">
+            <div class="success-message">
+              ✅ Your message has been posted successfully!
+            </div>
+          </div>
+        <% } %>
+        
         <main class="dashboard">
-          <h2>Dashboard</h2>
+          <div class="dashboard-header">
+            <h2>Dashboard</h2>
+            <a href="/messages/new" class="btn btn-primary">Create New Message</a>
+          </div>
+          
           <% if (user.is_member) { %>
             <div class="member-content">
               <h3>Member Area</h3>
               <p>Welcome to the exclusive member area!</p>
+              <div class="member-benefits">
+                <h4>Your Member Benefits:</h4>
+                <ul>
+                  <li>See who wrote each story</li>
+                  <li>Access to exclusive member discussions</li>
+                  <li>Priority support</li>
+                </ul>
+              </div>
               <!-- Add member-specific content here -->
             </div>
           <% } else { %>
             <div class="non-member-content">
               <h3>Become a Member</h3>
               <p>Join our exclusive club to access member-only content!</p>
-              <button class="btn btn-primary">Request Membership</button>
+              <div class="membership-benefits">
+                <h4>Member Benefits:</h4>
+                <ul>
+                  <li>See authors of all stories</li>
+                  <li>Access exclusive discussions</li>
+                  <li>Connect with other members</li>
+                </ul>
+              </div>
+              <a href="/auth/membership-request" class="btn btn-primary">Request Membership</a>
             </div>
           <% } %>
         </main>
@@ -89,5 +125,21 @@
         </div>
       <% } %>
     </div>
+
+    <script>
+      // Show success message and hide after 5 seconds
+      document.addEventListener('DOMContentLoaded', function() {
+        const successContainer = document.querySelector('.success-container');
+        if (successContainer) {
+          setTimeout(() => {
+            successContainer.style.transition = 'opacity 0.5s ease-out';
+            successContainer.style.opacity = '0';
+            setTimeout(() => {
+              successContainer.style.display = 'none';
+            }, 500);
+          }, 5000);
+        }
+      });
+    </script>
   </body>
 </html>

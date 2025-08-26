@@ -11,6 +11,7 @@ require('./config/passport'); // Initialize passport configuration
 // Import routes
 const authRoutes = require('./routes/authRouter');
 const indexRoutes = require('./routes/indexRouter');
+const messageRoutes = require('./routes/messageRouter');
 
 const app = express();
 
@@ -25,6 +26,7 @@ configureMiddleware(app);
 // Routes
 app.use('/', indexRoutes);
 app.use('/auth', authRoutes);
+app.use('/messages', messageRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {

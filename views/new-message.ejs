@@ -1,0 +1,162 @@
+<!-- views/new-message.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Message - Members Only Club</title>
+    <link rel="stylesheet" href="/styles/main.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="message-container">
+        <header class="message-header">
+          <h1>Create a New Message</h1>
+          <p class="subtitle">Share your thoughts with the community</p>
+          <div class="user-badge">
+            <span>Posting as: <strong><%= user.first_name %> <%= user.last_name %></strong></span>
+            <span class="status-badge <%= user.is_member ? 'member' : 'non-member' %>">
+              <%= user.is_member ? 'Member' : 'Non-Member' %>
+            </span>
+          </div>
+        </header>
+        
+        <!-- Display errors if any -->
+        <% if (locals.errors && errors.length > 0) { %>
+          <div class="error-container">
+            <ul class="error-list">
+              <% errors.forEach(error => { %>
+                <li class="error-message"><%= error.msg %></li>
+              <% }); %>
+            </ul>
+          </div>
+        <% } %>
+        
+        <form action="/messages/new" method="POST" class="message-form" id="messageForm">
+          <div class="form-group">
+            <label for="title">Message Title</label>
+            <input 
+              id="title" 
+              name="title" 
+              type="text" 
+              class="form-input"
+              placeholder="Enter a descriptive title for your message"
+              value="<%= locals.formData ? formData.title || '' : '' %>"
+              maxlength="100"
+              required 
+            />
+            <div class="character-counter">
+              <span id="titleCounter">0</span>/100 characters
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="content">Message Content</label>
+            <textarea 
+              id="content" 
+              name="content" 
+              class="form-textarea"
+              placeholder="Write your message here..."
+              rows="8"
+              maxlength="1000"
+              required
+            ><%= locals.formData ? formData.content || '' : '' %></textarea>
+            <div class="character-counter">
+              <span id="contentCounter">0</span>/1000 characters
+            </div>
+          </div>
+          
+          <div class="message-info">
+            <div class="visibility-info">
+              <h4>Who will see this message?</h4>
+              <ul>
+                <li>✅ All users can read your message</li>
+                <% if (user.is_member) { %>
+                  <li>✅ Members will see you as the author</li>
+                  <li>⚪ Non-members will see it as "Anonymous"</li>
+                <% } else { %>
+                  <li>⚪ Everyone will see you as "Anonymous"</li>
+                  <li>💡 <a href="/auth/membership-request">Become a member</a> to show your name!</li>
+                <% } %>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Post Message</button>
+            <a href="/" class="btn btn-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('messageForm');
+        const titleInput = document.getElementById('title');
+        const contentTextarea = document.getElementById('content');
+        const titleCounter = document.getElementById('titleCounter');
+        const contentCounter = document.getElementById('contentCounter');
+
+        // Character counters
+        function updateTitleCounter() {
+          const count = titleInput.value.length;
+          titleCounter.textContent = count;
+          titleCounter.style.color = count > 90 ? 'red' : count > 75 ? 'orange' : 'green';
+        }
+
+        function updateContentCounter() {
+          const count = contentTextarea.value.length;
+          contentCounter.textContent = count;
+          contentCounter.style.color = count > 900 ? 'red' : count > 750 ? 'orange' : 'green';
+        }
+
+        titleInput.addEventListener('input', updateTitleCounter);
+        contentTextarea.addEventListener('input', updateContentCounter);
+
+        // Initialize counters
+        updateTitleCounter();
+        updateContentCounter();
+
+        // Form validation
+        form.addEventListener('submit', function(e) {
+          const title = titleInput.value.trim();
+          const content = contentTextarea.value.trim();
+          
+          if (!title || !content) {
+            e.preventDefault();
+            alert('Please fill in both title and content');
+            if (!title) titleInput.focus();
+            else if (!content) contentTextarea.focus();
+            return false;
+          }
+          
+          if (title.length > 100) {
+            e.preventDefault();
+            alert('Title is too long (maximum 100 characters)');
+            titleInput.focus();
+            return false;
+          }
+          
+          if (content.length > 1000) {
+            e.preventDefault();
+            alert('Content is too long (maximum 1000 characters)');
+            contentTextarea.focus();
+            return false;
+          }
+          
+          return true;
+        });
+
+        // Focus on title input
+        titleInput.focus();
+
+        // Auto-resize textarea
+        contentTextarea.addEventListener('input', function() {
+          this.style.height = 'auto';
+          this.style.height = this.scrollHeight + 'px';
+        });
+      });
+    </script>
+  </body>
+</html>

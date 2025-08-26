@@ -1,8 +1,8 @@
-// ===== routes/authRoutes.js =====
+// ===== routes/authRouter.js =====
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
-const { signUpValidation, loginValidation } = require('../validators/authValidators');
+const { signUpValidation, loginValidation, membershipRequestValidation } = require('../validators/authValidators');
 const { loginLimiter, signUpLimiter } = require('../config/security');
 
 // Sign up routes
@@ -14,5 +14,9 @@ router.post('/login', loginLimiter, loginValidation, authController.handleLogin)
 
 // Logout route - no rate limiting needed
 router.get('/logout', authController.handleLogout);
+
+// Membership request routes
+router.get('/membership-request', authController.renderMembershipRequest);
+router.post('/membership-request', membershipRequestValidation, authController.handleMembershipRequest);
 
 module.exports = router;
