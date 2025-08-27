@@ -42,7 +42,6 @@ async function main() {
   await client.connect();
   await client.query(SQL);
   await client.end();
-  console.log("done - all admin users now have membership status");
 }
 
 main();
